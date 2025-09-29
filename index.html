@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karaoke Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0a0f0a;
+      color: #22c55e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .player {
+      width: 360px;
+      background: #0f172a;
+      border-radius: 25px;
+      padding: 20px;
+      box-shadow: 0 0 25px rgba(0,255,128,0.3);
+      text-align: center;
+      position: relative;
+    }
+    .cover img {
+      width: 100%;
+      height: 220px;
+      border-radius: 20px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+    .lyrics {
+      min-height: 70px;
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 15px 0;
+    }
+    .lyrics span {
+      display: none;
+      color: black; /* default lirik hitam */
+    }.lyrics .active {
+  display: block;
+  font-weight: bold;
+  color: white; /* hijau terang pas aktif */
+  text-shadow: 0 0 10px green;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #86efac;
+    }
+    .artist {
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+    .time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .progress {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 5px;
+      border-radius: 5px;
+      background: #14532d;
+      margin: 5px 0 15px;
+      cursor: pointer;
+    }
+    .progress::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #22c55e;
+      cursor: pointer;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+    }
+    .play-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      background: #22c55e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      color: black;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(34,197,94,0.6);
+      transition: 0.2s;
+    }
+    .play-btn:hover {
+      background: #16a34a;
+    }
+  </style>
+</head>
+<body>
+  <div class="player">
+    <div class="cover">
+      <img src="IMG-20250929-WA0018.jpg" alt="Cover Lagu">
+    </div>
+
+    <!-- Lirik sinkron -->
+    <div class="lyrics" id="lyrics">
+      <span data-time="0">Kau lihat temanmu berpasangan</span>
+      <span data-time="3.4">Dan bergandengan tangan</span>
+      <span data-time="7.5">Ku yakin kau disana bertahan</span>
+      <span data-time="11.7">Dan walau jarak ini memisahkan kita</span>
+      <span data-time="22">Tapi ku takkan goyah</span>
+    </div>
+
+    <div class="title">Jarak Dan Kita ( Akustik )</div>
+    <div class="artist">Dhyo Haw</div>
+    
+    <!-- Audio -->
+    <audio id="audio" src="original sound - sagoyy1_musicaldown.com_1759118737.mp3"></audio>
+
+    <div class="time">
+      <span id="currentTime">0:00</span>
+      <span id="duration">0:00</span>
+    </div>
+
+    <input type="range" id="progress" class="progress" value="0">
+
+    <div class="controls">
+      <button class="play-btn" id="playBtn">▶</button>
+    </div>
+  </div>
+
+  <script>
+    const audio = document.getElementById("audio");
+    const playBtn = document.getElementById("playBtn");
+    const progress = document.getElementById("progress");
+    const currentTimeEl = document.getElementById("currentTime");
+    const durationEl = document.getElementById("duration");
+    const lyrics = document.querySelectorAll("#lyrics span");
+
+    function formatTime(sec) {
+      const minutes = Math.floor(sec / 60);
+      const seconds = Math.floor(sec % 60);
+      return `${minutes}:${seconds < 10 ? "0"+seconds : seconds}`;
+    }
+
+    audio.addEventListener("timeupdate", () => {
+      if (audio.duration) {
+        progress.value = (audio.currentTime / audio.duration) * 100;
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+        durationEl.innerText = formatTime(audio.duration);
+      }
+
+      // update lirik karaoke
+      lyrics.forEach((line, index) => {
+        const start = parseInt(line.dataset.time);
+        const next = lyrics[index+1] ? parseInt(lyrics[index+1].dataset.time) : audio.duration;
+        if (audio.currentTime >= start && audio.currentTime < next) {
+          line.classList.add("active");
+        } else {
+          line.classList.remove("active");
+        }
+      });
+    });
+
+    progress.addEventListener("input", () => {
+      audio.currentTime = (progress.value / 100) * audio.duration;
+    });
+
+    playBtn.addEventListener("click", () => {
+      if (audio.paused) {
+        audio.play();
+        playBtn.innerText = "♱";
+      } else {
+        audio.pause();
+        playBtn.innerText = "▶";
+      }
+    });
+  </script>
+</body>
+</html>
